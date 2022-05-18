@@ -1,0 +1,34 @@
+import { Router } from 'express';
+import authentication from './routes/authentication';
+import me from './routes/me';
+import test from './test';
+import voiceRecord from './routes/voice.record';
+import upload from './routes/upload';
+import blog from './routes/blog';
+import emotion from './routes/emotion';
+import draw from './routes/draw';
+import notifications from './routes/notifications';
+import chat from './routes/chat';
+import relationship from './routes/relationship';
+import search from './routes/search';
+import user from './routes/user';
+import admin from './routes/admin';
+
+export default () => {
+    const app = Router();
+    authentication(app);
+    me(app);
+    test(app);
+    voiceRecord(app);
+    blog(app);
+    upload(app);
+    emotion(app);
+    draw(app);
+    notifications(app);
+    chat(app);
+    relationship(app);
+    search(app);
+    user(app);
+    admin(app);
+    return app;
+};

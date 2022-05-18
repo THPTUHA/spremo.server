@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activate Account</title>
+    <style>
+        html{
+            font-family: 'open sans', 'helvetica neue', sans-serif;
+        }
+        .mail-cover{
+            margin: auto;
+            margin-top: 20px;
+            max-width: 85%;
+            padding: 30px 30px 20px 30px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, .1);
+        }
+
+        .mail-logo img{
+            max-width: 120px;
+        }
+
+        .mail-body{
+            text-align: left;
+        }
+
+        .mail-greeting{
+            font-size: 18px;
+            color: #000!important;
+        }
+
+        .mail-content{
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0;
+            opacity: 0.7;
+            color: rgba(224, 35, 41, 1)!important;
+        }
+
+        .mail-action{
+            font-size: 14px;
+            color: #000!important;
+        }
+
+        .mail-button-cover{
+            text-align: center;
+        }
+
+        .mail-button{
+            margin-top: 15px;
+            display: inline-block;
+            background-color: #e02329 ;
+            color: #fff!important;
+            text-decoration: none;
+            cursor: pointer;
+            padding: 10px 70px;
+            font-size: 16px;
+            text-transform: uppercase;
+            transition: all .2s;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mail-button:hover{
+            opacity: 0.7;
+        }
+
+        .mail-ending{
+            font-size: 14px;
+            opacity: 0.5;
+        }
+
+        .mail-name{
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            margin-top: 40px;
+            color: #e02329!important;
+        }
+
+        .mail-subname{
+            font-size: 14px;
+            opacity: 1;
+            display: inline-block;
+            margin-top: 5px;
+            color: rgb(224, 35, 41)!important;
+        }
+
+        footer{
+            margin-top: 20px;
+            max-width: 300px;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        footer p{
+            color: rgb(224, 35, 41, .5)!important;
+            font-size: 13px;
+            margin: 0;
+
+        }
+
+        .mail-address{
+            font-size: 12px;
+            opacity: .8;
+        }
+
+        .mail-website{
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .LOGO{
+            color: #e02329;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+    <div class="mail-cover">
+        <div class="mail-logo">
+            <h1 class="LOGO">SPREMO</h1>
+        </div>
+        <div class="mail-body">
+            <h1 class="mail-greeting">Hello {{mail_receiver}}!</h1>
+            <h5 class="mail-content">Your account is signed up</h5>
+            <p class="mail-action">Click the button below to verify your account!</p>
+            <div class="mail-button-cover">
+                <a class="mail-button" href="{{link_activate}}">VerifyAccount</a>
+            </div>
+        </div>
+        <div>
+            <p class="mail-ending">
+                <div class="mail-name">
+                    SPREMO
+                </div>
+                <span class="mail-subname">SPREAD EMOTION</span>
+            </p>
+            
+        </div>
+    </div>
+    <footer>
+        <p class="mail-website">wele.vn</p>
+    </footer>
+</body>
+</html>

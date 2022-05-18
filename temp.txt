@@ -1,0 +1,23 @@
+import { Router } from 'express';
+import BaseError from '../../../packages/base.error/BaseError';
+import multer from 'multer';
+import passport from "passport"
+import { wrapAsync } from '../../../services/helper';
+
+export default (router: Router) => {
+    router.post("/signout",  
+        multer({}).fields([{ name: 'image' }, { name: 'audio' }]),
+        passport.authenticate('jwt', { session: false }),
+        wrapAsync(async(req, res)=>{
+            try {
+                return res.status(200).send({
+                    blogs: blogs.map((blog)=>blog.release()),
+                    code: BaseError.Code.SUCCESS
+                });
+            } catch (error) {
+                console.log("ERROR",error);
+                return res.status(200).send(new BaseError("Some errors occurred!", BaseError.Code.ERROR).release());
+            }
+        })
+    )
+};

@@ -1,0 +1,134 @@
+create table if not exists users(
+	id int auto_increment key,
+    username char(255),
+	password text,
+    avatar text,
+    background text,
+	contact text,
+    sex int,
+    description text,
+    role int,
+    last_login int,
+    emotion_id int,
+    blog_ids text,
+    email char(255),
+    last_update int,
+    active_status int,
+    data text,
+    day_of_birth int,
+    follower_number int,
+    chat_ids text,
+    following text,
+    blog_saved text,
+    friends text
+)engine=INNODB;
+
+create unique index username_index on users(username);
+create unique index email_index on users(email);
+
+create table if not exists blogs(
+	id int auto_increment key,
+    user_id int,
+    data text,
+    last_update int,
+    hash_key char(255),
+    created_time int,
+    status int,
+    type int,
+    like_number int,
+    comment_number int,
+    user_views text,
+    selected int,
+    selected_since int
+)engine=INNODB;
+create unique index hash_key_blogs on blogs(hash_keys);
+
+create table if not exists tags(
+	id int auto_increment key,
+    name char(255),
+    user_id int,
+    created_time int
+)engine=INNODB;
+create unique index name on tags(name);
+
+create table if not exists MapTag(
+	id int auto_increment key,
+    blog_id int,
+    tag_id int,
+    hash_key char(255)
+)engine=INNODB;
+create unique index hash_key on MapTag(hash_key);
+
+create table if not exists Comments(
+    id int auto_increment key,
+    object_id int,
+    object_type char(255),
+    user_id int,
+    since int,
+    content text,
+    last_update int
+)engine=INNODB;
+
+create table if not exists Notifications(
+    id int auto_increment key,
+    object_id int,
+    object_type char(255),
+    user_id int,
+    from_id int,
+    since int,
+    content text,
+    link text,
+    action char(255),
+    status int,
+    last_update int
+)engine=INNODB;
+
+create table if not exists chats(
+	id int auto_increment key,
+    user_ids char(255),
+    created_time int,
+    status int, 
+    avatar text
+)engine=INNODB;
+create unique index chat on chats(user_ids);
+
+create table if not exists likes(
+	id int auto_increment key,
+    user_id int,
+    since int,
+    emotion_id int,
+    blog_id int,
+    hash_key char(255),
+)engine=INNODB;
+create unique index likes on likes(hash_key);
+
+create table if not exists follow(
+	id int auto_increment key,
+    user_id int,
+    user_follow int,
+    since int,
+    hash_key char(255)
+)engine=INNODB;
+create unique index follow on likes(hash_key);
+
+create table if not exists records(
+	id int auto_increment key,
+    user_id int,
+    since int,
+    like_number int,
+    comment_number int,
+    view_number int,
+    blog_number int,
+    follow_number int
+)engine=INNODB;
+create unique index records on records(user_id, since);
+
+create table if not exists userChat(
+	id int auto_increment key,
+    user_id int,
+    chat_id int, 
+    status int,
+    hash_key char(255),
+    last_update int
+)engine=INNODB;
+create unique index userchat on userChat(hash_key);

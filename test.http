@@ -1,0 +1,11 @@
+POST http://localhost:3001/api/test/test
+Content-Type: application/json
+
+{
+    "object_id": 1,
+    "object_export":2,
+    "object_type":3,
+    "user_id": 4,
+    "user_name":"TEST",
+    "id":1
+}
