@@ -19,9 +19,11 @@ export default (router: Router) => {
                 }
 
                 const user_ban = await UserModel.findByPk(id);
-                user_ban.active_status = UserModel.BANNED;
+                user_ban.active_status = user_ban.active_status == UserModel.BANNED ? UserModel.ACTIVED: UserModel.BANNED;
                 user_ban.edit(["active_status"]);
+
                 return res.status(200).send({
+                    user: user_ban.release(),
                     code: BaseError.Code.SUCCESS
                 });
             } catch (error) {

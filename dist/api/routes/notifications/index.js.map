@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"./","sources":["api/routes/notifications/index.ts"],"names":[],"mappings":";;;;;AAAA,qCAAiC;AACjC,kDAA0B;AAC1B,8DAAqC;AAErC,kBAAe,CAAC,GAAW,EAAE,EAAE;IAC3B,MAAM,KAAK,GAAG,IAAA,gBAAM,GAAE,CAAC;IACvB,GAAG,CAAC,GAAG,CAAC,eAAe,EAAC,KAAK,CAAC,CAAC;IAC/B,IAAA,oBAAS,EAAC,KAAK,CAAC,CAAC;IACjB,IAAA,cAAI,EAAC,KAAK,CAAC,CAAC;AAChB,CAAC,CAAC"}

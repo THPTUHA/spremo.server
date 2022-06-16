@@ -15,8 +15,7 @@ export default (router: Router) => {
                     let {range} = req.body;
                     const records = await RecordModel.findAll({
                         where:{
-                            since: range,
-                            user_id: user.id
+                            since: JSON.parse(range),
                         }
                     })
                     res.status(200).send({

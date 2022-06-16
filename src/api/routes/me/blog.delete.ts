@@ -6,6 +6,9 @@ import { castToNumber, wrapAsync } from '../../../services/helper';
 import { UserModel } from '../../../models/user/user';
 import { BlogModel } from '../../../models/blog/blog';
 import { MapTagModal } from '../../../models/map.tag/map.tag';
+import { BLOG_TYPES, PUBLIC } from '../../../Constants';
+import { LikeModel } from '../../../models/core/like';
+import { CommentModel } from '../../../models/comment/comment';
 
 export default (router: Router) => {
     router.post("/blog.delete",  
@@ -47,7 +50,31 @@ export default (router: Router) => {
                     }
                 })
                 
-                await user.deleteBlog(blog.id);
+                await LikeModel.destroy({
+                    where:{
+                        blog_id: blog.id
+                    }
+                })
+
+                await CommentModel.destroy({
+                    where:{
+                        object_id: blog.id
+                    }
+                })
+
+                if(blog.status == PUBLIC && (blog.type == BLOG_TYPES.COMBINE) || (blog.type == BLOG_TYPES.NOTE) ){
+                    const user_data = user.data ? JSON.parse(user.data):{};
+                    const image_user_data = user_data.images ? user_data.images.filter(item => item.blog_id != blog.id) : [];
+                    
+                    
+                    user.data = JSON.stringify({
+                        ...user_data,
+                        images: image_user_data
+                    })
+
+                    await user.edit(["data"]);
+                }
+
                 await blog.destroy();
                 return res.status(200).send({
                     code: BaseError.Code.SUCCESS

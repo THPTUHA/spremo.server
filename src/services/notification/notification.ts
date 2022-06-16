@@ -11,6 +11,7 @@ export class NotificationService {
     content: string;
     from_object: {
         id: number,
+        name: string,
         avatar: string
     };
     link: string;
@@ -34,6 +35,7 @@ export class NotificationService {
 
     public from(from: UserModel) {
         this.from_object = {
+            name: from.username,
             id: from.id,
             avatar: from.avatar
         } 

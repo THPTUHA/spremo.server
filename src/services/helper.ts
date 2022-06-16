@@ -1,5 +1,6 @@
+import { async } from '@firebase/util';
 import fs from 'fs';
-import { BLOG_TYPES, DRAFT, EMOTIONS, FRIEND, PRIVATE, PUBLIC, SHARE_OPTIONS } from '../Constants';
+import { BLOG_TYPES, DRAFT, EMOTIONS, FRIEND, PRIVATE, PUBLIC, SETTINGS, SHARE_OPTIONS } from '../Constants';
 import { BlogModel } from '../models/blog/blog';
 import { MapTagModal } from '../models/map.tag/map.tag';
 import { TagModal } from '../models/tag/tag';
@@ -44,6 +45,16 @@ export function getEmotion(id: number){
         if(EMOTIONS[i].id ==  id) return EMOTIONS[i];
     }
     return EMOTIONS[0];
+}
+
+export function getEmotionIdFromTags(tags: string[]){
+    const ids = [];
+    for(const emotion of EMOTIONS){
+        if(tags.includes(emotion.name)){
+            ids.push(emotion.id);
+        }
+    }
+    return ids;
 }
 
 export function castToNumber(num: any){
@@ -150,7 +161,6 @@ export async function updateOneTag({tag, user_id, blog}:{tag: string, user_id: n
 }
 
 export async function updateManyTag({tags, user_id, blog}:{tags: string[], user_id: number, blog: BlogModel}) {
-    console.log("Tags.....",tags );
     let list_tag = await TagModal.findAll({
         where:{name: tags}
     })
@@ -184,7 +194,6 @@ export async function updateManyTag({tags, user_id, blog}:{tags: string[], user_
             }
         })
    }
-   console.log("LIST_TAGS------",list_tag);
    for(let i=0; i< list_tag.length ;++i){
         await MapTagModal.saveObject({
             blog_id: blog.id,
@@ -193,3 +202,12 @@ export async function updateManyTag({tags, user_id, blog}:{tags: string[], user_
         })   
     }   
 }
+
+export function getSetting(action: string){
+    for(const setting of SETTINGS){
+        if(action == setting.action){
+            return setting;
+        }
+    }
+    return null;
+}  

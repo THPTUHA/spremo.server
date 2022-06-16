@@ -29,7 +29,9 @@ export const BLOG_TYPES = {
     IMAGE: 2,
     VIDEO: 3,
     COMBINE: 4,
-    DRAW: 5
+    DRAW: 5,
+    MUSIC: 6,
+    NOTE: 7
 }
 
 export const EMOTIONS = [
@@ -63,4 +65,10 @@ export const AVATARS = [
     "https://res.cloudinary.com/nghiawebgamejava/image/upload/v1652015025/emotion/yummy_bzrzpx.png",
     "https://res.cloudinary.com/nghiawebgamejava/image/upload/v1652015026/emotion/start_whe6yj.jpg",
     "https://res.cloudinary.com/nghiawebgamejava/image/upload/v1652015027/emotion/funny_ha5jak.jpg"
+]
+
+export const SETTINGS = [
+    {action: "listen_music", type: ["select", "random"],},
+    {action: "read_blog", type: ["select", "random"]},
+    {action: "reminder", type: ["select", "random"]},
 ]

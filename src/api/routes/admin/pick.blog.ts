@@ -24,8 +24,7 @@ export default (router: Router) => {
                     return res.status(200).send(new BaseError("Blog not found!", BaseError.Code.ERROR).release());
                 }
 
-                console.log("SLEC_--",SELECTED);
-               blog.selected = SELECTED;
+               blog.selected =   blog.selected == SELECTED ? 0 : SELECTED;
                blog.selected_since = time();
 
                await blog.edit(["selected","selected_since"])

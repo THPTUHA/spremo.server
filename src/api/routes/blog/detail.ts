@@ -5,8 +5,10 @@ import {Op} from 'sequelize';
 import { castToNumber, wrapAsync } from '../../../services/helper';
 import { BlogModel } from '../../../models/blog/blog';
 import { MapTagModal } from '../../../models/map.tag/map.tag';
-import { PUBLIC } from '../../../Constants';
+import { BAN, EMOTIONS, PUBLIC } from '../../../Constants';
 import { UserModel } from '../../../models/user/user';
+import { TagModal } from '../../../models/tag/tag';
+import { Sequelize } from 'sequelize-typescript';
 
 export default (router: Router) => {
     router.post("/detail",  
@@ -21,17 +23,33 @@ export default (router: Router) => {
                 if(!blog){
                     return res.status(200).send(new BaseError("Blog not found!", BaseError.Code.ERROR).release());
                 }
+
+                if(blog.status == BAN){
+                    return res.status(200).send(new BaseError("You have no right!", BaseError.Code.ERROR).release());
+                }
+
                 let list_tag = blog.tags ? JSON.parse(blog.tags).map(tag => tag.toLowerCase()):[];
                 list_tag = Array.from(new Set(list_tag));
+                
+                list_tag = list_tag.filter((e)=>{
+                    for(const emotion of EMOTIONS){
+                        if(emotion.name == e){
+                            return false;
+                        }
+                    }
+                    return true;
+                })
 
                 const hash_keys = list_tag.map(tag => {
                     return {
                         hash_key: {
-                            [Op.like]: `${tag.name}#${PUBLIC}#%`
+                            [Op.like]: `${tag}#${PUBLIC}#%`
                         }
                     }
                 })
+
                 const mapTags = await MapTagModal.paginate({
+                    attributes: [[Sequelize.literal('DISTINCT `blog_id`'), 'blog_id']],
                     where: {
                         [Op.or]:hash_keys,
                     },
@@ -40,7 +58,7 @@ export default (router: Router) => {
 
                 let blogs = await BlogModel.findAll({
                     where:{
-                        id: mapTags.filter(tag => tag.blog_id != blog.id).map(tag => tag.blog_id)
+                        id: mapTags.map(tag => tag.blog_id)
                     }
                 })
                 
@@ -50,10 +68,13 @@ export default (router: Router) => {
                     }
                 })
 
+                const user = await UserModel.findByPk(blog.user_id);
+
                 return res.status(200).send({
                     users: users.map(user => user.release()),
                     blogs: blogs.map(blog => blog.release()),
                     blog: blog.release(),
+                    user: user.release(),
                     code: BaseError.Code.SUCCESS
                 });
             } catch (error) {

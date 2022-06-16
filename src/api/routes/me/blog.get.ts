@@ -23,7 +23,9 @@ export default (router: Router) => {
                     return res.status(200).send(new BaseError("Id invalid!", BaseError.Code.ERROR).release());
                 }
 
-                if(!user.isHasBlog(id)){
+                const check_exit_blog = await user.isHasBlog(id);
+                
+                if(!check_exit_blog){
                     return res.status(200).send(new BaseError("You don't have right!", BaseError.Code.ERROR).release());
                 }
 

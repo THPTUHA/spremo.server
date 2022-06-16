@@ -44,14 +44,17 @@ export default (router: Router) => {
                     return res.status(200).send(new BaseError("You can't share blog!", BaseError.Code.ERROR).release());
                 }
 
+                let user_views = "";
+                if(friend_ids){
+                    user_views = JSON.parse(friend_ids).map(id => "#"+id+"#").join("");
+                }
                 const emotion_name = blog.hash_key.split("#")[0];
                 
-                blog.user_views = status == FRIEND_SPECIFIC ? friend_ids: blog.user_views;
+                blog.user_views = status == FRIEND_SPECIFIC ? user_views: blog.user_views;
                 blog.status = status;
-                blog.hash_key = blog.editHashKeySync({id: -1 ,name: emotion_name});
+                blog.editHashKeySync();
 
                 await blog.edit(["status","hash_key","user_views"]);
-                await user.editBlog(blog.id, blog.status);
 
                 const tags = blog.getTags();
                 tags.push(emotion_name);

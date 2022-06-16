@@ -23,7 +23,7 @@ export default (router: Router) => {
                     if(!user){
                         return res.status(200).send(new BaseError("Please Login!", BaseError.Code.ERROR).release());
                     }
-                    await user.editBlogSaved({blog_id: castToNumber(id)});
+                    await user.editBookMarks({blog_id: castToNumber(id) });
                     return res.status(200).send({
                         code: BaseError.Code.SUCCESS
                     });

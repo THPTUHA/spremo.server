@@ -23,6 +23,8 @@ export class LikeModel extends DBModel {
     @Column
     hash_key :string
 
+    amount: number;
+    
     static createHashKey(blog_id: number, user_id: number){
         return blog_id + "#" + user_id;
     }

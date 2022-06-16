@@ -20,10 +20,20 @@ export default (router: Router) => {
                 }
 
                 const user_promote = await UserModel.findByPk(id);
-                user_promote.role = ROLES.CENSOR;
+
+                
+                if(user_promote.is(ROLES.CENSOR)){
+                    user_promote.role = ROLES.USER;
+                }else if(user_promote.is(ROLES.USER)){
+                    user_promote.role = ROLES.CENSOR;
+                }else{
+                    return res.status(200).send(new BaseError("Emotional damage!", BaseError.Code.ERROR).release());
+                }
+
                 await user_promote.edit(["role"]);
                 
                 return res.status(200).send({
+                    user: user_promote.release(),
                     code: BaseError.Code.SUCCESS
                 });
             } catch (error) {

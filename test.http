@@ -1,11 +1,89 @@
-POST http://localhost:3001/api/test/test
+# POST http://localhost:3001/api/authentication/signup
+# Content-Type: application/json
+
+# {
+#     "username": "conan",
+#     "email": "conang@gmail.com",
+#     "password": "123",
+#     "confirm_password": "123"
+# }
+
+# POST http://localhost:3001/api/authentication/signin
+# Content-Type: application/json
+
+# {
+#     "username": "baDao",
+#     "password": "123"
+# }
+
+# POST http://localhost:3001/api/me/blog.list
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJlbWFpbCI6ImFiY0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6IkFCQyJ9LCJpYXQiOjE2NTI4NDk5MjB9.08Y0tbIBn38KSdsrvR6augTe8u-E03IAU9zae7srpUk",
+#     "page": 1,
+#     "page_size": 10,
+#     "option": "staff-pick"
+# }
+
+# POST http://localhost:3001/api/admin/ban.blog
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJlbWFpbCI6ImFiY0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6IkFCQyJ9LCJpYXQiOjE2NTI4NDk5MjB9.08Y0tbIBn38KSdsrvR6augTe8u-E03IAU9zae7srpUk",
+#     "id":116
+# }
+
+# POST http://localhost:3001/api/admin/pick.blog
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo2LCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwidXNlcm5hbWUiOiJ0ZXN0In0sImlhdCI6MTY1MzUzNDQ1OX0.6FAvX6Q3nL--NstbiLB-QWzR-l7VVwhQ2VaPRH2Z9hQ",
+#     "id":116
+# }
+
+# POST http://localhost:3001/api/blog/like
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJlbWFpbCI6ImFiY0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6IkFCQyJ9LCJpYXQiOjE2NTI4NDk5MjB9.08Y0tbIBn38KSdsrvR6augTe8u-E03IAU9zae7srpUk",
+#     "emotion_id": 2,
+#     "id": 116
+# }
+
+# POST http://localhost:3001/api/blog/mark
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo2LCJlbWFpbCI6InRlc3RAZ21haWwuY29tIiwidXNlcm5hbWUiOiJ0ZXN0In0sImlhdCI6MTY1MzUzNDQ1OX0.6FAvX6Q3nL--NstbiLB-QWzR-l7VVwhQ2VaPRH2Z9hQ",
+#     "id": 113
+# }
+
+# POST http://localhost:3001/api/blog/auth.list
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo3LCJlbWFpbCI6ImFiY0BnbWFpbC5jb20iLCJ1c2VybmFtZSI6IkFCQyJ9LCJpYXQiOjE2NTI4NDk5MjB9.08Y0tbIBn38KSdsrvR6augTe8u-E03IAU9zae7srpUk",
+#     "q": "fuck"
+# }
+
+
+POST http://localhost:3001/api/me/blog.list
 Content-Type: application/json
 
 {
-    "object_id": 1,
-    "object_export":2,
-    "object_type":3,
-    "user_id": 4,
-    "user_name":"TEST",
-    "id":1
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJlbWFpbCI6ImJhRGFvQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiYmFEYW8ifSwiaWF0IjoxNjU1MTgxMTUzfQ.ROtAkjTu8_pT6qrBF9dDJd7d2gcS16IveZKVEzq_U14",
+    "option": "admin",
+    "page": 1,
+    "page_size": 10
 }
+
+# POST http://localhost:3001/api/user/list
+# Content-Type: application/json
+
+# {
+#     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJlbWFpbCI6ImJhRGFvQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiYmFEYW8ifSwiaWF0IjoxNjU0NTYyODk0fQ.gQSrdvZyBtQbOXcl5I_NtYFx8MxtfhNU-bSQxC0JsZs",
+#     "page": 1,
+#     "page_size": 5,
+#     "option": "follow"
+# }

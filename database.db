@@ -19,7 +19,7 @@ create table if not exists users(
     follower_number int,
     chat_ids text,
     following text,
-    blog_saved text,
+    bookmarks text,
     friends text
 )engine=INNODB;
 
@@ -35,11 +35,12 @@ create table if not exists blogs(
     created_time int,
     status int,
     type int,
-    like_number int,
     comment_number int,
     user_views text,
     selected int,
-    selected_since int
+    selected_since int,
+    content_search varchar(255),
+    emotion_ids varchar(255)
 )engine=INNODB;
 create unique index hash_key_blogs on blogs(hash_keys);
 
@@ -132,3 +133,13 @@ create table if not exists userChat(
     last_update int
 )engine=INNODB;
 create unique index userchat on userChat(hash_key);
+
+create table if not exists settings(
+	id int auto_increment key,
+    user_id int,
+    emotion_id int, 
+    status int,
+    action varchar(255),
+    type varchar(255),
+    data text
+)engine=INNODB;

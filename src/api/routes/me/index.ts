@@ -9,6 +9,10 @@ import blogShare from './blog.share';
 import appearanceEdit from './appearance.edit';
 import record from './record';
 import friendList from './friend.list';
+import settingSave from './setting.save';
+import settingEdit from './setting.edit';
+import settingDelete from './setting.delete';
+import settingList from './setting.list';
 
 export default (app: Router) => {
     const route = Router();
@@ -23,4 +27,8 @@ export default (app: Router) => {
     appearanceEdit(route);
     record(route);
     friendList(route);
+    settingSave(route);
+    settingEdit(route);
+    settingDelete(route);
+    settingList(route);
 };

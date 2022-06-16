@@ -29,16 +29,13 @@ export default (router: Router) => {
 
                 follow.destroy();
                 
-                const my_following = user.getFollowing().filter(item => item.user_id != user_follow.id);
-                const my_friend = user.getFriends().filter(item => item.user_id != user_follow.id);
-                
-                user.friends = JSON.stringify(my_friend);
-                user.following = JSON.stringify(my_following);
+                user.deleteFriend(user_follow.id);
+                user.deleteFollowing(user_follow.id);
                 await user.edit(["following","friends"]);
 
-                const friends = user_follow.getFriends().filter(item => item.user_id != user.id);
-                user_follow.friends = JSON.stringify(friends);
+              
                 user_follow.follower_number -= 1;
+                user_follow.deleteFriend(user.id);
                 await user_follow.edit(["follower_number","friends"]);
 
                 if(user_follow.is(ROLES.DEVELOPER)){
@@ -51,6 +48,7 @@ export default (router: Router) => {
                 }
                 
                 return res.status(200).send({
+                    is_follow: false,
                     code: BaseError.Code.SUCCESS
                 });
 

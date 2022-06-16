@@ -3,7 +3,7 @@ import BaseError from '../../../packages/base.error/BaseError';
 import multer from 'multer';
 import passport from "passport"
 import { BlogModel } from '../../../models/blog/blog';
-import { BAN } from '../../../Constants';
+import { BAN, PRIVATE, PUBLIC, ROLES } from '../../../Constants';
 import { castToNumber, getEmotion, isValidBlogType, isValidStatus, time, updateManyTag, wrapAsync } from '../../../services/helper';
 import { UserModel } from '../../../models/user/user';
 
@@ -16,16 +16,25 @@ export default (router: Router) => {
             try {
                 const user = req.user as UserModel;
 
+                if(!user || (!user.is(ROLES.ADMIN) && !user.is(ROLES.CENSOR))){
+                    return res.status(200).send(new BaseError("You have no right!", BaseError.Code.ERROR).release());
+                }
+
                 const blog = await BlogModel.findByPk(id);
                 if(!blog){
                     return res.status(200).send(new BaseError("Blog not found!", BaseError.Code.ERROR).release());
                 }
-                blog.status = BAN;
+
+                if(blog.status == PRIVATE){
+                    return res.status(200).send(new BaseError("Blog is private!", BaseError.Code.ERROR).release());
+                }
+
+                blog.status = blog.status == BAN ? PUBLIC : BAN;
                 await blog.edit(["status"]);
                 
                 const emotion_name = blog.hash_key.split("#")[0] ;
                 if(emotion_name){
-                    await blog.editHashKey({name: emotion_name, id: 0});
+                    await blog.editHashKey();
                 }
 
                 let list_tag = blog.getTags();
@@ -38,7 +47,10 @@ export default (router: Router) => {
                     blog: blog
                 })
 
-                blog.onBan(blog, user,reason);
+                if(blog.status == BAN){
+                    const owner = await UserModel.findByPk(blog.user_id);
+                    blog.onBan(blog, user,owner,reason);
+                }
 
                 return res.status(200).send({
                     code: BaseError.Code.SUCCESS

@@ -38,9 +38,6 @@ export default (router: Router) => {
                     last_update: time()
                 });
 
-                blog.comment_number = blog.comment_number ? blog.comment_number + 1: 1;
-                await blog.edit(["comment_number"]);
-
                 const owner = await UserModel.findByPk(blog.user_id);
                 if(owner.is(ROLES.DEVELOPER)){
                     const day = getExactDayNow();

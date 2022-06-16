@@ -4,6 +4,7 @@ import multer from 'multer';
 import passport from "passport"
 import { wrapAsync } from '../../../services/helper';
 import { UserModel } from '../../../models/user/user';
+import {Op} from 'sequelize';
 
 export default (router: Router) => {
     router.post("/friend.list",  
@@ -15,18 +16,15 @@ export default (router: Router) => {
                 let users = [] as UserModel[];
                 if(q){
                     const user = req.user as UserModel;
-                    const friends = user.getFriends();
+                    const friend_ids = user.getFriends();
                     q = q.toLowerCase();
-                    const friend_ids = [];
-                    for(let i = 0 ; i < friends.length ; ++i){
-                        if(q.length <=  friends[i].username.length 
-                            && q == friends[i].username.toLowerCase().substring(0,q.length)){
-                                friend_ids.push(friends[i].user_id)
-                            }
-                    }
+                    
                     users = await UserModel.findAll({
                         where: {
-                            id: friend_ids
+                            id: friend_ids,
+                            username:{
+                                [Op.like]: `%${q}%`
+                            }
                         }
                     })
                 }

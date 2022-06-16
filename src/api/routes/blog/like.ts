@@ -44,26 +44,34 @@ export default (router: Router) => {
                         blog_id :blog.id,
                         hash_key :LikeModel.createHashKey(blog.id, user.id)
                     })
+
+                    const owner = await UserModel.findByPk(blog.user_id);
+
+                    if(owner.is(ROLES.DEVELOPER)){
+                        const day = getExactDayNow();
+                        await user.updateRecord({
+                            type: RECORD_TYPE.LIKE,
+                            day: day,
+                            value: 1
+                        })
+                    }
+
+                    await blog.onLike(like,user, [owner])
+
                 }else{
-                    like.emotion_id = emotion_id;
-                    like.since =time();
-                    await like.edit(["emotion_id","since"]);
+                    await  like.destroy();
+                    const owner = await UserModel.findByPk(blog.user_id);
+
+                    if(owner.is(ROLES.DEVELOPER)){
+                        const day = getExactDayNow();
+                        await user.updateRecord({
+                            type: RECORD_TYPE.LIKE,
+                            day: day,
+                            value: -1
+                        })
+                    }
                 }
 
-                blog.like_number += 1;
-                await blog.edit(["like_number"]);
-                const owner = await UserModel.findByPk(blog.user_id);
-
-                if(owner.is(ROLES.DEVELOPER)){
-                    const day = getExactDayNow();
-                    await user.updateRecord({
-                        type: RECORD_TYPE.LIKE,
-                        day: day,
-                        value: 1
-                    })
-                }
-
-                await blog.onLike(like,user, [owner])
                 return res.status(200).send({
                     code: BaseError.Code.SUCCESS
                 });

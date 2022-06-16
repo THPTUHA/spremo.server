@@ -10,6 +10,7 @@ import { LikeModel } from '../models/core/like';
 import { FollowModel } from '../models/core/follow';
 import { RecordModel } from '../models/record/Record';
 import { UserChatModel } from '../models/user.chat/user.chat';
+import { SettingModel } from '../models/core/setting';
 
 export default () => {
     const sequelize = new Sequelize({
@@ -29,7 +30,8 @@ export default () => {
             LikeModel,
             FollowModel,
             RecordModel,
-            UserChatModel
+            UserChatModel,
+            SettingModel
         ]
     });
     return sequelize;

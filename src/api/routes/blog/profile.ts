@@ -1,10 +1,8 @@
 import { Router } from 'express';
 import BaseError from '../../../packages/base.error/BaseError';
 import multer from 'multer';
-import passport from "passport"
-import { wrapAsync } from '../../../services/helper';
+import { castToNumber, wrapAsync } from '../../../services/helper';
 import { UserModel } from '../../../models/user/user';
-import { FRIEND, FRIEND_SPECIFIC, PUBLIC } from '../../../Constants';
 
 export default (router: Router) => {
     router.post("/profile",  
@@ -19,11 +17,11 @@ export default (router: Router) => {
                 if(!user){
                     return res.status(200).send(new BaseError("Some errors occurred!", BaseError.Code.ERROR).release());
                 }
-
-                const blogs = await user.getBlogs({page: 1, page_size: 10, status: [PUBLIC,FRIEND, FRIEND_SPECIFIC], user_id: user.id});
+                                
                 return res.status(200).send({
-                    owner: user.release(),
-                    blogs: blogs.map(blog => blog.release()),
+                    is_follow: false,
+                    is_friend: false,
+                    user: user.release(),
                     code: BaseError.Code.SUCCESS
                 });
             } catch (error) {

@@ -16,10 +16,11 @@ export default (router: Router) => {
                 const {user_id} = req.body;
                 const user = req.user as UserModel;
                 const user_follow = await UserModel.findByPk(user_id);
-                let follow_status = PUBLIC;
+
                 if(!user_follow){
                     return res.status(200).send(new BaseError("User not found!", BaseError.Code.ERROR).release());
                 }
+
                 let follow = await  FollowModel.findOne({
                     where: { hash_key: FollowModel.createHashKey(user_follow.id, user.id)}
                 })
@@ -38,75 +39,33 @@ export default (router: Router) => {
                 user_follow.follower_number += 1;
                 await user_follow.edit(["follower_number"]);
                 
-                const my_following = user.getFollowing();
+                // const my_following = user.getFollowing();
+
                 if(user_follow.is(ROLES.DEVELOPER)){
                     const day = getExactDayNow();
+
                     await user_follow.updateRecord({
                         type: RECORD_TYPE.FOLLOW,
                         day: day,
                         value: 1
                     }) 
-                    my_following.push({
-                        user_id: user_follow.id,
-                        status: PUBLIC
-                    })
-                    user.following = JSON.stringify(my_following);
-                    await user.edit(["following"]);
-
                 }else{
                     const following = user_follow.getFollowing();
-                    let check = -1;
-                    for(let i = 0; i < following.length ;++i){
-                        if(following[i].user_id == user.id){
-                            check = i;
-                            break;
-                        }
-                    }
-                    if(check > -1){
-                        const my_friends = user.getFriends();
-                        const friends = user_follow.getFriends();
+                    if(following.includes(user.id)){
+                        user.addFriend(user_follow.id);
+                        user_follow.addFriend(user.id);
 
-                        following[check] = {
-                            user_id: user.id,
-                            status: FRIEND
-                        } 
-                        my_following.push({
-                            user_id: user_follow.id,
-                            status: FRIEND
-                        })
+                        await user.edit(["friends"]);
+                        await user_follow.edit(["friends"]);
 
-                        my_friends.push({
-                            user_id: user_follow.id,
-                            username: user_follow.username
-                        });
-
-                        friends.push({
-                            user_id: user.id,
-                            username: user.username
-                        })
-                        user.friends = JSON.stringify(my_friends);
-                        user.following = JSON.stringify(my_following);
-
-                        user_follow.friends = JSON.stringify(friends);
-                        user_follow.following = JSON.stringify(following);
-                        follow_status = FRIEND;
-                        await user.edit(["friends","following"]);
-                        await user_follow.edit(["friends","following"]);
-                        await user.onFriend(follow, user, user_follow);
-
-                    }else {
-                        my_following.push({
-                            user_id: user_follow.id,
-                            status: PUBLIC
-                        })
-                        console.log("MY FOLLOWING", my_following);
-                        user.following = JSON.stringify(my_following);
-                        await user.edit(["following"]);
                     }
                 }
 
+                user.addFollowing(user_follow.id);
+                await user.edit(["following"]);
+
                 return res.status(200).send({
-                    follow_status: follow_status,
+                    is_follow: true,
                     code: BaseError.Code.SUCCESS
                 });
             } catch (error) {

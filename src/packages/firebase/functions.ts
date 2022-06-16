@@ -13,7 +13,7 @@ class FirebaseFunctions {
         return this.instance;
     }
 
-    public async saveNotification(notification: NotificationModel, from:  {id: number,avatar: string}) {
+    public async saveNotification(notification: NotificationModel, from:  {id: number,avatar: string,name: string}) {
         await firebase_db.collection("notifications").doc(notification.user_id.toString()).collection("notifications").doc(notification.id.toString()).set({
             object_id: notification.object_id,
             object_type: notification.object_type,
@@ -23,8 +23,8 @@ class FirebaseFunctions {
             from_id: notification.from_id,
             action: notification.action,
             link: notification.link,
-            from_avatar: from.id,
-            from_name: from.avatar
+            from_avatar: from.avatar,
+            from_name: from.name
         });
     }
 

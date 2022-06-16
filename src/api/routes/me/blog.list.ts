@@ -6,8 +6,10 @@ import { castToNumber, getEmotion, time, wrapAsync } from '../../../services/hel
 import { UserModel } from '../../../models/user/user';
 import { BlogModel } from '../../../models/blog/blog';
 import {Op} from 'sequelize';
-import { FRIEND, FRIEND_SPECIFIC, PUBLIC } from '../../../Constants';
+import { FRIEND, FRIEND_SPECIFIC, PRIVATE, PUBLIC } from '../../../Constants';
 import { LikeModel } from '../../../models/core/like';
+import follow from '../relationship/follow';
+import { Sequelize } from 'sequelize-typescript';
 
 export default (router: Router) => {
     router.post("/blog.list",  
@@ -18,84 +20,132 @@ export default (router: Router) => {
             if(!user){
                 return res.status(200).send(new BaseError("Please login!", BaseError.Code.ERROR).release());
             }
-            let {page,page_size, my_blog,emotion_id , friend_position, following_position, friend_spe_position,blog,option} = req.body;
+            let {page,page_size,emotion_id ,blog_viewed,option,content_search, type} = req.body;
+
             let blogs = [];
             let likes = [];
             let users = [];
+            let blog_number = 0;
+            blog_viewed = blog_viewed? JSON.parse(blog_viewed): [];
+            page = page? castToNumber(page): 1;
 
-            page = castToNumber(page)? page : 1;
-            page_size = castToNumber(page_size)? page_size : 10;
-
+            console.log("PAGE ---",page);
+            page_size = page_size? castToNumber(page_size): 10;
             try {
-                if(my_blog){
-                    if(blog){
-                        blogs = await BlogModel.findAll({
-                            where: {
-                                id: blog,
+                if(content_search){
+                    let q:any = {
+                        content_search:{
+                            [Op.like]:  `%${content_search}%`
+                        },
+                        [Op.or]:[
+                            {
+                                status: PUBLIC,
+                            },
+                            {
+                                status: PRIVATE,
                                 user_id: user.id
                             }
-                        })
-                    }else if(option == 'mark'){
-                        const blog_ids = user.getBlogSaved();
-                        blogs = await BlogModel.findAll({
-                            where:{id: blog_ids}
-                        })
-                    }else{
-                        blogs = await user.getBlogs({page: page, page_size: page_size, user_id: user.id});
+                        ]
                     }
-                }else{
-                    if(emotion_id){
-                        const emotion = getEmotion(emotion_id);
-                        console.log("EMOTION--------",emotion);
 
-                        const current = time() - 7 * 24 * 3600;
-                        const friends = user.friends ? JSON.parse(user.friends): [];
-                        
-                        const result = await BlogModel.get({
-                            option: FRIEND_SPECIFIC,
-                            postion: friend_spe_position,
-                            page: page,
-                            searchs: friends,
-                            emotion: emotion.name,
-                            user_id: user.id,
-                            current: current
-                        })
-
-                        friend_spe_position = result.postion;
-                        blogs = result.blogs;
-                        
-                        if(blogs.length < 6){
-                           const result = await BlogModel.get({
-                            option: FRIEND,
-                            postion: friend_position,
-                            page: page,
-                            searchs: friends,
-                            emotion: emotion.name,
-                            user_id: user.id,
-                            current: current
-                           })
-                           friend_position = result.postion;
-                           blogs.push(...result.blogs);
-
-                           if(blogs.length < 6){
-                                const following = user.getFollowing();
-                                following.push({
-                                    user_id: user.id,
-                                    status: PUBLIC
-                                });
-                                const result = await BlogModel.get({
-                                    option: PUBLIC,
-                                    postion: following_position,
-                                    page: page,
-                                    searchs: following,
-                                    emotion: emotion.name,
-                                    user_id: user.id,
-                                    current: current
-                                })
-                                following_position = result.postion;
-                                blogs.push(...result.blogs);
-                           }
+                    if(type){
+                        q = {
+                            ...q,
+                            type: type
                         }
+                    }
+
+                    
+                    blogs = await BlogModel.findAll({
+                        where:q
+                    })
+
+                    blog_number = await BlogModel.count({
+                        where: q
+                    })
+
+                }else if(option){
+                    const data = await BlogModel.findByOption({
+                        option: option,
+                        user: user,
+                        emotion_id: emotion_id,
+                        blog_viewed: blog_viewed,
+                        pagination: {
+                            page: page,
+                            page_size: page_size
+                        }
+                    })
+
+                    blogs = data.blogs;
+                    blog_number = data.blog_number;
+                }else if(emotion_id){
+                    const emotion = getEmotion(emotion_id);
+
+                    const current = time() - 7 * 24 * 3600;
+                    
+                    const following = user.getFollowing();
+                    const friends = user.getFriends();
+
+                    const hash_key_following = following.map(follow =>{
+                        return {
+                            [Op.like]: `${follow}#${PUBLIC}#%`  
+                        }
+                    })
+
+                    console.log("Hash_Key_FOLLOWING....",hash_key_following);
+                    
+                    const hash_key_friend = friends.map(friend =>{
+                        return {
+                            [Op.like]: `${friend}#${FRIEND}#%`  
+                        }
+                    })
+
+                    const hash_key_friend_specific = friends.map(friend =>{
+                        return {
+                            [Op.like]: `${friend}#${FRIEND_SPECIFIC}#%`  
+                        }
+                    })
+                    
+                    const q = {
+                        id:{
+                            [Op.notIn]: blog_viewed,
+                        },
+                        [Op.or]:[
+                            {
+                                hash_key: {
+                                    [Op.or]: hash_key_following
+                                },
+                            },
+                            {
+                                hash_key: {
+                                    [Op.or]: hash_key_friend_specific
+                                },
+                                user_views: {
+                                    [Op.like]: `%#${user.id}#%` 
+                                }
+                            },
+                            {
+                                hash_key: {
+                                    [Op.or]: hash_key_friend
+                                },
+                            }
+                        ],
+                        emotion_ids:{
+                            [Op.like]: `%#${emotion.id}#%`  
+                        }
+                    }
+
+                    blogs = await BlogModel.paginate({
+                        where: q,
+                        order: Sequelize.literal('rand()'),
+                    },{page, page_size})
+
+                    blog_number = await BlogModel.count({
+                        where: q,
+                    })
+
+                    for(const blog of blogs){
+                        blog_viewed.push(blog.id);
                     }
                 }
 
@@ -114,11 +164,10 @@ export default (router: Router) => {
                     blogs: blogs.map((blog)=>blog.release()),
                     likes: likes.map((like)=>like.release()),
                     users: users.map((user)=> user.release()),
-                    friend_position: friend_position, 
-                    following_position: following_position, 
-                    friend_spe_position: friend_spe_position,
-                    blog_saved: user? user.getBlogSaved():[],
-                    code: BaseError.Code.SUCCESS
+                    bookmarks: user? user.getBookMarks():[],
+                    blog_viewed, 
+                    blog_number,
+                    code: BaseError.Code.SUCCESS,
                 });
                 
             } catch (error) {

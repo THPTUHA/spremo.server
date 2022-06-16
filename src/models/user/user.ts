@@ -1,33 +1,13 @@
-import { Column, PrimaryKey, Table } from "sequelize-typescript";
-import { FRIEND_SPECIFIC, RECORD_TYPE, ROLES } from "../../Constants";
+import { Column, PrimaryKey, Sequelize, Table } from "sequelize-typescript";
+import { BAN, FRIEND, FRIEND_SPECIFIC, PRIVATE, RECORD_TYPE, ROLES } from "../../Constants";
 import Crypto from "../../packages/crypto/crypto";
 import { DBModel } from "../../packages/database/DBModel";
 import { NotificationService } from "../../services/notification/notification";
 import { BlogModel } from "../blog/blog";
 import { FollowModel } from "../core/follow";
 import { RecordModel } from "../record/Record";
+import {Op} from 'sequelize';
 
-interface Follow{
-    user_id: number,
-    status: number
-}
-
-interface Friend{
-    user_id: number,
-    username: string
-}
-
-interface Blog{
-    id: number,
-    status: number
-}
-
-interface Record{
-    like_number: number,
-    view_number: number,
-    comment_number: number,
-    blog_number: number
-}
 @Table({
     tableName: 'Users',
     timestamps: false
@@ -60,8 +40,6 @@ export class UserModel extends DBModel{
     @Column
     emotion_id: number;
     @Column
-    blog_ids: string;
-    @Column
     chat_ids: string;
     @Column
     last_update: number;
@@ -80,7 +58,7 @@ export class UserModel extends DBModel{
     @Column
     friends: string
     @Column
-    blog_saved: string
+    bookmarks: string
 
     static BANNED = -2;
     static UNACTIVE = -1;
@@ -101,22 +79,49 @@ export class UserModel extends DBModel{
     }
     
     getFollowing(){
-        return (this.following ? JSON.parse(this.following): []) as Follow[];
+        return (this.following ? this.following.split("#").filter(id => id).map(id=>parseInt(id)): []) as number[];
+    }
+
+    addFollowing(user_id:number){
+        this.following = ( this.following?  this.following: "") + "#"+ user_id+"#";
     }
 
     getFriends(){
-        return (this.friends ? JSON.parse(this.friends): []) as Friend[];
+        return (this.friends ? this.friends.split("#").filter(id => id).map(id=>parseInt(id)): []) as number[];
+    }
+    
+    addFriend(user_id: number){
+        this.friends = ( this.friends?  this.friends: "") + "#"+ user_id+"#";
+    }
+
+    isFriend(user_id: number){
+        return this.friends.includes("#"+user_id+"#");
+    }
+
+    isFollowing(user_id: number){
+        return this.following.includes("#"+user_id+"#");
+    }
+
+    deleteFriend(user_id: number){
+        this.friends = this.friends.replace("#"+user_id+"#",'');
+    }
+
+    deleteFollowing(user_id: number){
+        this.following = this.following.replace("#"+user_id+"#",'');
     }
     
     async updateRecord({type, day, value}: {type: number, day: number, value: number}){
         const record = await RecordModel.findOne({
             where: {
-                since: day,
-                user_id: this.id
+                since: day
             }
         })
-
-        let data = (this.data ? JSON.parse(this.data): {}) as Record;
+        let data = {
+            comment_number: 0,
+            blog_number: 0,
+            like_number: 0,
+            view_number: 0
+        };
         switch(type){
             case RECORD_TYPE.COMMENT:
                 data = {
@@ -168,7 +173,6 @@ export class UserModel extends DBModel{
 
         if(!record){
             await RecordModel.saveObject({
-                user_id: this.id,
                 since: day,
                 like_number: 0,
                 view_number: 0,
@@ -179,101 +183,63 @@ export class UserModel extends DBModel{
             })
         }
     }
-
-    async addBlog(blog_id: number, status: number){
-        const blogs = this.blog_ids? JSON.parse(this.blog_ids): [];
-        blogs.push({
-            id: blog_id,
-            status: status
-        });
-        this.blog_ids = JSON.stringify(blogs);
-        await this.edit(["blog_ids"]);
-    }
-
-    async deleteBlog(blog_id: number){
-        const blogs = this.blog_ids? JSON.parse(this.blog_ids): [];
-        for(let i = 0;i < blogs.length; ++i){
-            if(blogs[i].id == blog_id){
-                blogs.splice(i,1);
-                break;
-            }
-        }
-        this.blog_ids = JSON.stringify(blogs);
-        await this.edit(["blog_ids"]);
-    }
-
-    async editBlog(blog_id: number, status: number){
-        const blogs = (this.blog_ids? JSON.parse(this.blog_ids): []) as Blog[];
-        for(let i = 0;i < blogs.length; ++i){
-            if(blogs[i].id == blog_id){
-                blogs[i] = {
-                    id: blog_id,
-                    status: status
-                }
-                break;
-            }
-        }
-        this.blog_ids = JSON.stringify(blogs);
-        await this.edit(["blog_ids"]);
-    }
     
-    getBlogSaved(){
-        return (this.blog_saved? JSON.parse(this.blog_saved): []) as number[]
+    getBookMarks(){
+        return (this.bookmarks? JSON.parse(this.bookmarks): []) as number[]
     }
 
-    async editBlogSaved({blog_id,is_delete}:{blog_id: number, is_delete?: boolean}){
-        const ids = this.getBlogSaved();
-        if(is_delete){
-            this.blog_saved = JSON.stringify(ids.filter(id => id!= blog_id));
+    async editBookMarks({blog_id}:{blog_id: number}){
+        const ids = this.getBookMarks();
+        if(ids.includes(blog_id)){
+            this.bookmarks = JSON.stringify(ids.filter(id => id!= blog_id));
         }else{
             ids.push(blog_id);
-            this.blog_saved = JSON.stringify(ids);
+            this.bookmarks = JSON.stringify(ids);
         }
-        await this.edit(["blog_saved"]);
+        await this.edit(["bookmarks"]);
     }
 
-    async getBlogs({page, page_size, status,user_id}: {page: number, page_size: number, status?: number[],user_id?:number}){
-        let blogs = (this.blog_ids? JSON.parse(this.blog_ids): []) as Blog[];
-        let ids = [];
-        if(status){
-            ids = blogs.filter(blog =>  status.includes(blog.status)).map(blog => blog.id);
-        }else{
-            ids = blogs.map(blog => blog.id);
-        }
-        let blog_result = [] as BlogModel[];
-        // const ids = blogs.splice(Math.max(0,blogs.length - page* page_size), 
-        //             Math.min(blogs.length, page_size))
-        //             .map(blogs => blogs.id)
-        console.log("IDS...........", ids);
-        const result = [];
-        if(ids.length){
-            blog_result = await BlogModel.findAll({
-                where:{
-                    id: ids
-                },
-                order: [['id', 'DESC']]
-            })
-            for(let i = 0; i< blog_result.length ;++i){
-                if(blog_result[i].status ==  FRIEND_SPECIFIC){
-                    if(blog_result[i].user_id == user_id||blog_result[i].getUserView().includes(user_id)){
-                        result.push(blog_result[i])
-                    }   
-                }else{
-                    result.push(blog_result[i])
-                }
+    async getBlogsByOtherUser({page, page_size,user_view_id}: {page: number, page_size: number,user_view_id?:number}){
+        let q :any= {
+            user_id: this.id
+        };
+
+        if(this.isFriend(user_view_id)){
+            q = {
+                ...q,
+                [Op.or]:[
+                    {
+                        status: FRIEND_SPECIFIC,
+                        user_views: {
+                            [Op.like]: `%#${user_view_id}#%` 
+                        }
+                    },
+                    {
+                        status: FRIEND
+                    },
+                ],
             }
         }
-        return result;
+
+        const blogs = await BlogModel.paginate({
+            where :q,
+            order: [['id', 'DESC']]
+        },{page, page_size})
+
+        const blog_number = await BlogModel.count({
+            where: q
+        })
+        return { blogs, blog_number};
     }
     
-    isHasBlog(blog_id: number){
-        const blogs = this.blog_ids ? JSON.parse(this.blog_ids): [];
-        for(let i = 0; i < blogs.length; ++i){
-            if(blogs[i].id == blog_id){
-                return true;
+    async isHasBlog(blog_id: number){
+        
+        return await BlogModel.findOne({
+            where:{
+                id: blog_id,
+                user_id: this.id,
             }
-        }
-        return false;
+        })
     }
 
 
@@ -300,12 +266,15 @@ export class UserModel extends DBModel{
             avatar: this.avatar,
             background: this.background,
             emotion_id: this.emotion_id,
-            data: this.data? JSON.parse(this.data): {},
-            following: this.following ? JSON.parse(this.following):[],
+            data: this.data? JSON.parse(this.data): {
+                images: []
+            },
+            following: this.following ? this.getFollowing():[],
             follower_number: this.follower_number,
-            friends: this.friends ? JSON.parse(this.friends): [],
+            friends: this.friends ? this.getFriends(): [],
             role: this.role,
-            blog_saved: this.blog_saved? JSON.parse(this.blog_saved):[]
+            active_status: this.active_status,
+            bookmarks: this.bookmarks? JSON.parse(this.bookmarks):[]
         }
     }
 }

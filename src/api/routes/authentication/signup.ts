@@ -79,8 +79,8 @@ export default (router: Router) => {
                 role: is_developer? ROLES.DEVELOPER: ROLES.USER,
                 active_status: -1,
                 follower_number: 0,
-                friends: JSON.stringify([]),
-                following: JSON.stringify([])
+                friends: '',
+                following: ''
             };
     
             const user = await UserModel.saveObject(new_user);
